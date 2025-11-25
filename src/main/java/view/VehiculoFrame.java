@@ -1,7 +1,7 @@
 package view;
 
 import components.*;
-import dao.VehiculoDAO;
+import controller.VehiculoControlador;
 import model.Vehiculo;
 
 import javax.swing.*;
@@ -14,7 +14,7 @@ public class VehiculoFrame extends JFrame {
 
     private StyledTable tabla;
     private DefaultTableModel modelo;
-    private VehiculoDAO dao = new VehiculoDAO();
+    private VehiculoControlador controlador = new VehiculoControlador();
 
     // Campos para ingresar/editar vehículo
     private StyledTextField txtPatente;
@@ -22,42 +22,66 @@ public class VehiculoFrame extends JFrame {
     private StyledTextField txtKmDia;
     private StyledTextField txtTarifaDia;
     private StyledTextField txtExtraKm;
+    private JCheckBox chkDisponible;   // ← NUEVO
 
     public VehiculoFrame() {
         setTitle("CRUD Vehículos");
-        setSize(900, 550);
+        setSize(1000, 600);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
         // Tabla
-        String[] columnas = {"ID", "Patente", "Modelo", "Km/día", "Tarifa/día", "Extra/km", "Veces alquilado"};
-        modelo = new DefaultTableModel(columnas, 0);
+        String[] columnas = {
+            "ID", "Patente", "Modelo", "Km/día",
+            "Tarifa/día", "Extra/km", "Veces alquilado",
+            "Disponible" // ← NUEVO
+        };
+
+        modelo = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
         tabla = new StyledTable(modelo);
         add(new StyledScrollPane(tabla), BorderLayout.CENTER);
 
         // Panel de formulario arriba
-        StyledPanel panelForm = new StyledPanel(new GridLayout(2, 5, 10, 10));
+        StyledPanel panelForm = new StyledPanel(new GridLayout(3, 5, 10, 10));
+
         txtPatente = new StyledTextField();
         txtModelo = new StyledTextField();
         txtKmDia = new StyledTextField();
         txtTarifaDia = new StyledTextField();
         txtExtraKm = new StyledTextField();
+        chkDisponible = new JCheckBox("Disponible"); // ← NUEVO
+        chkDisponible.setSelected(true);
 
+        // Primera fila labels
         panelForm.add(new StyledLabel("Patente:"));
         panelForm.add(new StyledLabel("Modelo:"));
         panelForm.add(new StyledLabel("Km/día:"));
         panelForm.add(new StyledLabel("Tarifa/día:"));
         panelForm.add(new StyledLabel("Extra/km:"));
 
+        // Segunda fila inputs
         panelForm.add(txtPatente);
         panelForm.add(txtModelo);
         panelForm.add(txtKmDia);
         panelForm.add(txtTarifaDia);
         panelForm.add(txtExtraKm);
 
+        // Fila checkbox
+        panelForm.add(new JLabel(""));
+        panelForm.add(chkDisponible);
+        panelForm.add(new JLabel(""));
+        panelForm.add(new JLabel(""));
+        panelForm.add(new JLabel(""));
+
         add(panelForm, BorderLayout.NORTH);
 
-        // Panel de botones
+        // Panel de botones abajo
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         StyledButton btnNuevo = new StyledButton("Nuevo");
         StyledButton btnGuardar = new StyledButton("Guardar");
@@ -68,6 +92,7 @@ public class VehiculoFrame extends JFrame {
         panelBotones.add(btnGuardar);
         panelBotones.add(btnActualizar);
         panelBotones.add(btnBorrar);
+
         add(panelBotones, BorderLayout.SOUTH);
 
         // Acciones
@@ -79,18 +104,23 @@ public class VehiculoFrame extends JFrame {
         // Cargar datos
         cargarTabla();
 
-        // Seleccionar fila para editar
+        // Seleccionar fila
         tabla.getSelectionModel().addListSelectionListener(e -> seleccionarFila());
     }
 
     private void cargarTabla() {
         modelo.setRowCount(0);
-        List<Vehiculo> lista = dao.listar();
+        List<Vehiculo> lista = controlador.listar();
         for (Vehiculo v : lista) {
             modelo.addRow(new Object[]{
-                v.getId(), v.getPatente(), v.getModelo(),
-                v.getKmIncluidoPorDia(), v.getTarifaPorDia(),
-                v.getTarifaExtraPorKm(), v.getVecesAlquilado()
+                v.getId(),
+                v.getPatente(),
+                v.getModelo(),
+                v.getKmIncluidoPorDia(),
+                v.getTarifaPorDia(),
+                v.getTarifaExtraPorKm(),
+                v.getVecesAlquilado(),
+                v.isDisponible() ? "Sí" : "No" // ← NUEVO
             });
         }
     }
@@ -103,6 +133,9 @@ public class VehiculoFrame extends JFrame {
             txtKmDia.setText(modelo.getValueAt(fila, 3).toString());
             txtTarifaDia.setText(modelo.getValueAt(fila, 4).toString());
             txtExtraKm.setText(modelo.getValueAt(fila, 5).toString());
+
+            String disp = modelo.getValueAt(fila, 7).toString();
+            chkDisponible.setSelected(disp.equals("Sí"));  // ← NUEVO
         }
     }
 
@@ -112,74 +145,78 @@ public class VehiculoFrame extends JFrame {
         txtKmDia.setText("");
         txtTarifaDia.setText("");
         txtExtraKm.setText("");
+        chkDisponible.setSelected(true); // ← NUEVO
         tabla.clearSelection();
     }
 
     private void accionGuardar(ActionEvent e) {
         try {
-            String patente = txtPatente.getText().trim();
-            String modeloTxt = txtModelo.getText().trim();
-            double kmDia = Double.parseDouble(txtKmDia.getText().trim());
-            double tarifaDia = Double.parseDouble(txtTarifaDia.getText().trim());
-            double extraKm = Double.parseDouble(txtExtraKm.getText().trim());
-
             Vehiculo v = new Vehiculo();
-            v.setPatente(patente);
-            v.setModelo(modeloTxt);
-            v.setKmIncluidoPorDia(kmDia);
-            v.setTarifaPorDia(tarifaDia);
-            v.setTarifaExtraPorKm(extraKm);
+            v.setPatente(txtPatente.getText().trim());
+            v.setModelo(txtModelo.getText().trim());
+            v.setKmIncluidoPorDia(Double.parseDouble(txtKmDia.getText().trim()));
+            v.setTarifaPorDia(Double.parseDouble(txtTarifaDia.getText().trim()));
+            v.setTarifaExtraPorKm(Double.parseDouble(txtExtraKm.getText().trim()));
+            v.setDisponible(chkDisponible.isSelected());  // ← NUEVO
 
-            dao.agregar(v);
+            controlador.guardar(v);
             cargarTabla();
             accionNuevo(null);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ingresa valores numéricos válidos para Km/día y tarifas", "Error", JOptionPane.ERROR_MESSAGE);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Valores numéricos inválidos.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void accionActualizar(ActionEvent e) {
         int fila = tabla.getSelectedRow();
         if (fila < 0) {
-            JOptionPane.showMessageDialog(this, "Selecciona un vehículo para actualizar", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Selecciona un vehículo para actualizar",
+                    "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try {
-            int id = (int) modelo.getValueAt(fila, 0);
-            String patente = txtPatente.getText().trim();
-            String modeloTxt = txtModelo.getText().trim();
-            double kmDia = Double.parseDouble(txtKmDia.getText().trim());
-            double tarifaDia = Double.parseDouble(txtTarifaDia.getText().trim());
-            double extraKm = Double.parseDouble(txtExtraKm.getText().trim());
-
             Vehiculo v = new Vehiculo();
-            v.setId(id);
-            v.setPatente(patente);
-            v.setModelo(modeloTxt);
-            v.setKmIncluidoPorDia(kmDia);
-            v.setTarifaPorDia(tarifaDia);
-            v.setTarifaExtraPorKm(extraKm);
+            v.setId((int) modelo.getValueAt(fila, 0));
+            v.setPatente(txtPatente.getText().trim());
+            v.setModelo(txtModelo.getText().trim());
+            v.setKmIncluidoPorDia(Double.parseDouble(txtKmDia.getText().trim()));
+            v.setTarifaPorDia(Double.parseDouble(txtTarifaDia.getText().trim()));
+            v.setTarifaExtraPorKm(Double.parseDouble(txtExtraKm.getText().trim()));
+            v.setDisponible(chkDisponible.isSelected());  // ← NUEVO
 
-            dao.actualizar(v);
+            controlador.actualizar(v);
             cargarTabla();
             accionNuevo(null);
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Ingresa valores numéricos válidos para Km/día y tarifas", "Error", JOptionPane.ERROR_MESSAGE);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Valores numéricos inválidos.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void accionBorrar(ActionEvent e) {
         int fila = tabla.getSelectedRow();
         if (fila < 0) {
-            JOptionPane.showMessageDialog(this, "Selecciona un vehículo para borrar", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Selecciona un vehículo para borrar",
+                    "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         int id = (int) modelo.getValueAt(fila, 0);
-        int resp = JOptionPane.showConfirmDialog(this, "¿Seguro que deseas borrar este vehículo?", "Confirmar", JOptionPane.YES_NO_OPTION);
-        if (resp == JOptionPane.YES_OPTION) {
-            dao.eliminar(id);
+
+        if (JOptionPane.showConfirmDialog(this,
+                "¿Seguro que deseas borrar este vehículo?",
+                "Confirmar",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+
+            controlador.borrar(id);
             cargarTabla();
             accionNuevo(null);
         }
@@ -206,9 +243,7 @@ public class VehiculoFrame extends JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new VehiculoFrame().setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new VehiculoFrame().setVisible(true));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

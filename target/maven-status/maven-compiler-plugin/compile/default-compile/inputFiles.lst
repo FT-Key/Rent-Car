@@ -10,12 +10,14 @@ C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\compone
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\components\StyledTable.java
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\components\StyledTextField.java
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\conexion\ConexionSQL.java
+C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\controller\ClienteControlador.java
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\dao\AlquilerDAO.java
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\dao\ClienteDAO.java
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\dao\VehiculoDAO.java
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\model\Alquiler.java
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\model\Cliente.java
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\model\Vehiculo.java
+C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\service\ClienteServicio.java
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\utils\Seeder.java
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\utils\UIStyles.java
 C:\Users\Franco Toledo\Documents\NetBeansProjects\Rent-Car\src\main\java\utils\UIUtils.java

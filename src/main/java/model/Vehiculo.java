@@ -23,11 +23,9 @@ public class Vehiculo {
         this.tarifaExtraPorKm = tarifaExtraPorKm;
     }
 
-    // Getters y Setters
     public int getId() {
         return id;
     }
-
     public void setId(int id) {
         this.id = id;
     }
@@ -35,7 +33,6 @@ public class Vehiculo {
     public String getPatente() {
         return patente;
     }
-
     public void setPatente(String patente) {
         this.patente = patente;
     }
@@ -43,7 +40,6 @@ public class Vehiculo {
     public String getModelo() {
         return modelo;
     }
-
     public void setModelo(String modelo) {
         this.modelo = modelo;
     }
@@ -51,7 +47,6 @@ public class Vehiculo {
     public double getKmIncluidoPorDia() {
         return kmIncluidoPorDia;
     }
-
     public void setKmIncluidoPorDia(double kmIncluidoPorDia) {
         this.kmIncluidoPorDia = kmIncluidoPorDia;
     }
@@ -59,7 +54,6 @@ public class Vehiculo {
     public double getTarifaPorDia() {
         return tarifaPorDia;
     }
-
     public void setTarifaPorDia(double tarifaPorDia) {
         this.tarifaPorDia = tarifaPorDia;
     }
@@ -67,7 +61,6 @@ public class Vehiculo {
     public double getTarifaExtraPorKm() {
         return tarifaExtraPorKm;
     }
-
     public void setTarifaExtraPorKm(double tarifaExtraPorKm) {
         this.tarifaExtraPorKm = tarifaExtraPorKm;
     }
@@ -75,7 +68,6 @@ public class Vehiculo {
     public int getVecesAlquilado() {
         return vecesAlquilado;
     }
-
     public void setVecesAlquilado(int vecesAlquilado) {
         this.vecesAlquilado = vecesAlquilado;
     }

@@ -2,6 +2,7 @@ conexion\ConexionSQL.class
 components\StyledButton$RoundedBorder.class
 app\Main.class
 components\StyledScrollPane.class
+controller\ClienteControlador.class
 components\StyledMenuItem.class
 components\StyledPanel.class
 model\Cliente.class
@@ -16,6 +17,7 @@ model\Vehiculo.class
 components\StyledTable.class
 components\StyledComboBox.class
 components\StyledTextField.class
+service\ClienteServicio.class
 utils\UIStyles.class
 components\StyledMenu.class
 utils\UIUtils.class

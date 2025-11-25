@@ -1,48 +1,31 @@
 package model;
 
-public class Cliente {
+public class Cliente extends Persona {
 
-    private int id;
-    private String nombre;
-    private String licenciaConducir;
+    private String licenciaNumero;
+    private String licenciaCategoria;
+    private String licenciaVencimiento;
 
     public Cliente() {
     }
 
-    public Cliente(int id, String nombre, String licenciaConducir) {
-        this.id = id;
-        this.nombre = nombre;
-        this.licenciaConducir = licenciaConducir;
+    public Cliente(int id, String nombre, String apellido, String dni, String telefono,
+                   String email, String direccion, String licenciaNumero,
+                   String licenciaCategoria, String licenciaVencimiento) {
+
+        super(id, nombre, apellido, dni, telefono, email, direccion);
+        this.licenciaNumero = licenciaNumero;
+        this.licenciaCategoria = licenciaCategoria;
+        this.licenciaVencimiento = licenciaVencimiento;
     }
 
     // Getters y Setters
-    public int getId() {
-        return id;
-    }
+    public String getLicenciaNumero() { return licenciaNumero; }
+    public void setLicenciaNumero(String licenciaNumero) { this.licenciaNumero = licenciaNumero; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getLicenciaCategoria() { return licenciaCategoria; }
+    public void setLicenciaCategoria(String licenciaCategoria) { this.licenciaCategoria = licenciaCategoria; }
 
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getLicenciaConducir() {
-        return licenciaConducir;
-    }
-
-    public void setLicenciaConducir(String licenciaConducir) {
-        this.licenciaConducir = licenciaConducir;
-    }
-
-    @Override
-    public String toString() {
-        return nombre;
-    }
-
+    public String getLicenciaVencimiento() { return licenciaVencimiento; }
+    public void setLicenciaVencimiento(String licenciaVencimiento) { this.licenciaVencimiento = licenciaVencimiento; }
 }

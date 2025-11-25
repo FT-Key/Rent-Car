@@ -1,49 +1,97 @@
 package view;
 
 import components.*;
-import dao.ClienteDAO;
+import controller.ClienteControlador;
 import model.Cliente;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.util.List;
 
 public class ClienteFrame extends JFrame {
 
     private StyledTable tabla;
     private DefaultTableModel modelo;
-    private ClienteDAO dao = new ClienteDAO();
 
-    // Campos para agregar/editar
+    private ClienteControlador controlador = new ClienteControlador();
+
+    // Campos del formulario
     private StyledTextField txtNombre;
-    private StyledTextField txtLicencia;
+    private StyledTextField txtApellido;
+    private StyledTextField txtDni;
+    private StyledTextField txtTelefono;
+    private StyledTextField txtEmail;
+    private StyledTextField txtDireccion;
+
+    private StyledTextField txtLicenciaNumero;
+    private StyledTextField txtLicenciaCategoria;
+    private StyledTextField txtLicenciaVencimiento;
 
     public ClienteFrame() {
-        setTitle("CRUD Clientes");
-        setSize(700, 500);
+
+        setTitle("Gestión de Clientes - RentCar");
+        setSize(950, 600);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // Tabla
-        String[] columnas = {"ID", "Nombre", "Licencia"};
+        // ============================================
+        // TABLA
+        // ============================================
+        String[] columnas = {
+            "ID", "Nombre", "Apellido", "DNI", "Teléfono", "Email", "Dirección",
+            "Lic. Número", "Lic. Categoría", "Lic. Vencimiento"
+        };
+
         modelo = new DefaultTableModel(columnas, 0);
         tabla = new StyledTable(modelo);
+
         add(new StyledScrollPane(tabla), BorderLayout.CENTER);
 
-        // Panel de formulario
-        StyledPanel panelForm = new StyledPanel(new GridLayout(2, 2, 10, 10));
+        // ============================================
+        // FORMULARIO
+        // ============================================
+        StyledPanel panelForm = new StyledPanel(new GridLayout(9, 2, 10, 10));
+
         txtNombre = new StyledTextField();
-        txtLicencia = new StyledTextField();
+        txtApellido = new StyledTextField();
+        txtDni = new StyledTextField();
+        txtTelefono = new StyledTextField();
+        txtEmail = new StyledTextField();
+        txtDireccion = new StyledTextField();
+
+        txtLicenciaNumero = new StyledTextField();
+        txtLicenciaCategoria = new StyledTextField();
+        txtLicenciaVencimiento = new StyledTextField();
+
         panelForm.add(new StyledLabel("Nombre:"));
         panelForm.add(txtNombre);
-        panelForm.add(new StyledLabel("Licencia:"));
-        panelForm.add(txtLicencia);
+        panelForm.add(new StyledLabel("Apellido:"));
+        panelForm.add(txtApellido);
+        panelForm.add(new StyledLabel("DNI:"));
+        panelForm.add(txtDni);
+        panelForm.add(new StyledLabel("Teléfono:"));
+        panelForm.add(txtTelefono);
+        panelForm.add(new StyledLabel("Email:"));
+        panelForm.add(txtEmail);
+        panelForm.add(new StyledLabel("Dirección:"));
+        panelForm.add(txtDireccion);
+
+        panelForm.add(new StyledLabel("Licencia Número:"));
+        panelForm.add(txtLicenciaNumero);
+        panelForm.add(new StyledLabel("Licencia Categoría:"));
+        panelForm.add(txtLicenciaCategoria);
+        panelForm.add(new StyledLabel("Licencia Vencimiento:"));
+        panelForm.add(txtLicenciaVencimiento);
+
         add(panelForm, BorderLayout.NORTH);
 
-        // Panel de botones
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        // ============================================
+        // BOTONES
+        // ============================================
+        JPanel panelBotones = new JPanel(new FlowLayout());
+
         StyledButton btnNuevo = new StyledButton("Nuevo");
         StyledButton btnGuardar = new StyledButton("Guardar");
         StyledButton btnActualizar = new StyledButton("Actualizar");
@@ -53,26 +101,39 @@ public class ClienteFrame extends JFrame {
         panelBotones.add(btnGuardar);
         panelBotones.add(btnActualizar);
         panelBotones.add(btnBorrar);
+
         add(panelBotones, BorderLayout.SOUTH);
 
-        // Acciones
+        // ACCIONES
         btnNuevo.addActionListener(this::accionNuevo);
         btnGuardar.addActionListener(this::accionGuardar);
         btnActualizar.addActionListener(this::accionActualizar);
         btnBorrar.addActionListener(this::accionBorrar);
 
-        // Cargar datos iniciales
-        cargarTabla();
-
-        // Seleccionar fila para editar
         tabla.getSelectionModel().addListSelectionListener(e -> seleccionarFila());
+
+        cargarTabla();
     }
 
+    // ------------------------------------------------------------
+    // MÉTODOS
+    // ------------------------------------------------------------
     private void cargarTabla() {
         modelo.setRowCount(0);
-        List<Cliente> lista = dao.listar();
-        for (Cliente c : lista) {
-            modelo.addRow(new Object[]{c.getId(), c.getNombre(), c.getLicenciaConducir()});
+
+        for (Cliente c : controlador.obtenerClientes()) {
+            modelo.addRow(new Object[]{
+                c.getId(),
+                c.getNombre(),
+                c.getApellido(),
+                c.getDni(),
+                c.getTelefono(),
+                c.getEmail(),
+                c.getDireccion(),
+                c.getLicenciaNumero(),
+                c.getLicenciaCategoria(),
+                c.getLicenciaVencimiento()
+            });
         }
     }
 
@@ -80,66 +141,102 @@ public class ClienteFrame extends JFrame {
         int fila = tabla.getSelectedRow();
         if (fila >= 0) {
             txtNombre.setText(modelo.getValueAt(fila, 1).toString());
-            txtLicencia.setText(modelo.getValueAt(fila, 2).toString());
+            txtApellido.setText(modelo.getValueAt(fila, 2).toString());
+            txtDni.setText(modelo.getValueAt(fila, 3).toString());
+            txtTelefono.setText(modelo.getValueAt(fila, 4).toString());
+            txtEmail.setText(modelo.getValueAt(fila, 5).toString());
+            txtDireccion.setText(modelo.getValueAt(fila, 6).toString());
+
+            txtLicenciaNumero.setText(modelo.getValueAt(fila, 7).toString());
+            txtLicenciaCategoria.setText(modelo.getValueAt(fila, 8).toString());
+            txtLicenciaVencimiento.setText(modelo.getValueAt(fila, 9).toString());
         }
     }
 
     private void accionNuevo(ActionEvent e) {
         txtNombre.setText("");
-        txtLicencia.setText("");
+        txtApellido.setText("");
+        txtDni.setText("");
+        txtTelefono.setText("");
+        txtEmail.setText("");
+        txtDireccion.setText("");
+
+        txtLicenciaNumero.setText("");
+        txtLicenciaCategoria.setText("");
+        txtLicenciaVencimiento.setText("");
+
         tabla.clearSelection();
     }
 
     private void accionGuardar(ActionEvent e) {
-        String nombre = txtNombre.getText().trim();
-        String licencia = txtLicencia.getText().trim();
+        try {
+            controlador.guardarCliente(
+                    txtNombre.getText(),
+                    txtApellido.getText(),
+                    txtDni.getText(),
+                    txtTelefono.getText(),
+                    txtEmail.getText(),
+                    txtDireccion.getText(),
+                    txtLicenciaNumero.getText(),
+                    txtLicenciaCategoria.getText(),
+                    txtLicenciaVencimiento.getText()
+            );
 
-        if (nombre.isEmpty() || licencia.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Completa todos los campos", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
+            cargarTabla();
+            accionNuevo(null);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        Cliente c = new Cliente();
-        c.setNombre(nombre);
-        c.setLicenciaConducir(licencia);
-
-        dao.agregar(c);
-        cargarTabla();
-        accionNuevo(null);
     }
 
     private void accionActualizar(ActionEvent e) {
         int fila = tabla.getSelectedRow();
         if (fila < 0) {
-            JOptionPane.showMessageDialog(this, "Selecciona un cliente para actualizar", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Selecciona un cliente", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         int id = (int) modelo.getValueAt(fila, 0);
-        String nombre = txtNombre.getText().trim();
-        String licencia = txtLicencia.getText().trim();
 
-        Cliente c = new Cliente();
-        c.setId(id);
-        c.setNombre(nombre);
-        c.setLicenciaConducir(licencia);
+        try {
 
-        dao.actualizar(c);
-        cargarTabla();
-        accionNuevo(null);
+            controlador.actualizarCliente(
+                    id,
+                    txtNombre.getText(),
+                    txtApellido.getText(),
+                    txtDni.getText(),
+                    txtTelefono.getText(),
+                    txtEmail.getText(),
+                    txtDireccion.getText(),
+                    txtLicenciaNumero.getText(),
+                    txtLicenciaCategoria.getText(),
+                    txtLicenciaVencimiento.getText()
+            );
+
+            cargarTabla();
+            accionNuevo(null);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void accionBorrar(ActionEvent e) {
         int fila = tabla.getSelectedRow();
         if (fila < 0) {
-            JOptionPane.showMessageDialog(this, "Selecciona un cliente para borrar", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Selecciona un cliente", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         int id = (int) modelo.getValueAt(fila, 0);
-        int resp = JOptionPane.showConfirmDialog(this, "¿Seguro que deseas borrar este cliente?", "Confirmar", JOptionPane.YES_NO_OPTION);
+
+        int resp = JOptionPane.showConfirmDialog(this,
+                "¿Seguro que deseas eliminar este cliente?",
+                "Confirmar", JOptionPane.YES_NO_OPTION);
+
         if (resp == JOptionPane.YES_OPTION) {
-            dao.eliminar(id);
+            controlador.borrarCliente(id);
             cargarTabla();
             accionNuevo(null);
         }
@@ -165,10 +262,9 @@ public class ClienteFrame extends JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(() -> new ClienteFrame().setVisible(true));
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new ClienteFrame().setVisible(true));
     }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 }
