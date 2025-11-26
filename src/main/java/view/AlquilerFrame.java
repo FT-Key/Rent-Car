@@ -1,12 +1,14 @@
 package view;
 
 import components.*;
-import dao.AlquilerDAO;
-import dao.VehiculoDAO;
-import dao.ClienteDAO;
+import controller.AlquilerControlador;
+import controller.VehiculoControlador;
+import controller.ClienteControlador;
+import controller.PagoControlador;
+
 import model.Alquiler;
-import model.Vehiculo;
 import model.Cliente;
+import model.Vehiculo;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -19,192 +21,222 @@ public class AlquilerFrame extends JFrame {
 
     private StyledTable tabla;
     private DefaultTableModel modelo;
-    private AlquilerDAO alquilerDAO = new AlquilerDAO();
-    private VehiculoDAO vehiculoDAO = new VehiculoDAO();
-    private ClienteDAO clienteDAO = new ClienteDAO();
+
+    private AlquilerControlador alquilerCtrl = new AlquilerControlador();
+    private VehiculoControlador vehiculoCtrl = new VehiculoControlador();
+    private ClienteControlador clienteCtrl = new ClienteControlador();
+    private PagoControlador pagoCtrl = new PagoControlador();
 
     private JComboBox<Cliente> comboCliente;
     private JComboBox<Vehiculo> comboVehiculo;
 
     public AlquilerFrame() {
-        setTitle("Alquiler de Vehículos");
-        setSize(1000, 500);
+
+        setTitle("Gestión de Alquileres");
+        setSize(1100, 550);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Tabla de alquileres
-        String[] columnas = {"ID", "Vehículo", "Cliente", "Inicio", "Fin", "Km Inicio", "Km Fin", "Monto", "Estado"};
-        modelo = new DefaultTableModel(columnas, 0) {
+        // TABLA
+        modelo = new DefaultTableModel(
+                new String[]{"ID", "Vehículo", "Cliente", "Inicio", "Fin", "Precio Base", "Estado"}, 0
+        ) {
             @Override
-            public boolean isCellEditable(int row, int column) {
+            public boolean isCellEditable(int r, int c) {
                 return false;
             }
         };
+
         tabla = new StyledTable(modelo);
         add(new StyledScrollPane(tabla), BorderLayout.CENTER);
 
-        // Panel superior: selección de cliente y vehículo + botón registrar
-        JPanel panelArriba = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        // PANEL SUPERIOR (REGISTRO)
+        JPanel arriba = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+
         comboCliente = new JComboBox<>();
         comboVehiculo = new JComboBox<>();
+
         StyledButton btnRegistrar = new StyledButton("Registrar Alquiler");
 
-        panelArriba.add(new JLabel("Cliente:"));
-        panelArriba.add(comboCliente);
-        panelArriba.add(new JLabel("Vehículo:"));
-        panelArriba.add(comboVehiculo);
-        panelArriba.add(btnRegistrar);
+        arriba.add(new JLabel("Cliente:"));
+        arriba.add(comboCliente);
+        arriba.add(new JLabel("Vehículo:"));
+        arriba.add(comboVehiculo);
+        arriba.add(btnRegistrar);
 
-        add(panelArriba, BorderLayout.NORTH);
+        add(arriba, BorderLayout.NORTH);
 
-        // Panel inferior: devolución y filtro
-        JPanel panelAbajo = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        StyledButton btnDevolver = new StyledButton("Recibir Vehículo");
-        JComboBox<String> comboFiltro = new JComboBox<>(new String[]{"Todos", "Pendientes", "Devueltos"});
-        panelAbajo.add(btnDevolver);
-        panelAbajo.add(new JLabel("Filtrar:"));
-        panelAbajo.add(comboFiltro);
-        add(panelAbajo, BorderLayout.SOUTH);
+        // PANEL INFERIOR (ACCIONES)
+        JPanel abajo = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
-        // Cargar combos y tabla
-        cargarCombos();
+        StyledButton btnDevolver = new StyledButton("Registrar Devolución");
+        JComboBox<String> filtro = new JComboBox<>(new String[]{"Todos", "Pendientes", "Devueltos"});
+
+        abajo.add(btnDevolver);
+        abajo.add(new JLabel("Filtrar:"));
+        abajo.add(filtro);
+
+        add(abajo, BorderLayout.SOUTH);
+
+        // CARGA INICIAL
+        cargarClientes();
+        cargarVehiculosDisponibles();
         cargarTabla();
 
-        // Acciones
-        btnRegistrar.addActionListener(this::accionRegistrar);
-        btnDevolver.addActionListener(this::accionRecibir);
-        comboFiltro.addActionListener(e -> filtrarTabla(comboFiltro.getSelectedIndex()));
+        // ACCIONES
+        btnRegistrar.addActionListener(this::registrarAlquiler);
+        btnDevolver.addActionListener(this::registrarDevolucion);
+        filtro.addActionListener(e -> filtrarTabla(filtro.getSelectedIndex()));
     }
 
-    private void cargarCombos() {
+    // =================================================================================
+    // MÉTODOS DE CARGA
+    // =================================================================================
+    private void cargarClientes() {
         comboCliente.removeAllItems();
-        for (Cliente c : clienteDAO.listar()) {
-            comboCliente.addItem(c);
-        }
+        clienteCtrl.obtenerClientes().forEach(comboCliente::addItem);
+    }
+
+    private void cargarVehiculosDisponibles() {
 
         comboVehiculo.removeAllItems();
-        List<Alquiler> pendientes = alquilerDAO.listarPorEstado(false); // vehículos en alquiler pendientes
-        for (Vehiculo v : vehiculoDAO.listar()) {
-            boolean alquilado = pendientes.stream().anyMatch(a -> a.getVehiculo().getId() == v.getId());
-            if (!alquilado) { // solo agregar vehículos disponibles
+
+        List<Alquiler> pendientes = alquilerCtrl.listar().stream()
+                .filter(a -> a.getPago() == null)
+                .toList();
+
+        for (Vehiculo v : vehiculoCtrl.listar()) {
+            boolean alquilado = pendientes.stream()
+                    .anyMatch(a -> a.getVehiculo().getId() == v.getId());
+            if (!alquilado) {
                 comboVehiculo.addItem(v);
             }
         }
     }
 
+    // =================================================================================
+    // TABLA
+    // =================================================================================
     private void cargarTabla() {
         modelo.setRowCount(0);
-        for (Alquiler a : alquilerDAO.listar()) {
-            agregarFilaTabla(a);
-        }
+        alquilerCtrl.listar().forEach(this::agregarFila);
     }
 
-    private void agregarFilaTabla(Alquiler a) {
+    private void agregarFila(Alquiler a) {
+
+        String estado = (a.getPago() != null) ? "Devuelto" : "Pendiente";
+
         modelo.addRow(new Object[]{
             a.getId(),
             a.getVehiculo().getModelo(),
             a.getCliente().getNombre(),
             a.getFechaInicio(),
             a.getFechaFin(),
-            a.getKmInicio(),
-            a.getKmFin(),
-            a.getMontoTotal(),
-            a.isDevuelto() ? "Devuelto" : "Pendiente"
+            a.getPrecioTotal(),
+            estado
         });
     }
 
-    private void filtrarTabla(int index) {
-        Boolean devuelto = null;
-        if (index == 1) {
-            devuelto = false; // pendientes
-        } else if (index == 2) {
-            devuelto = true; // devueltos
-        }
+    private void filtrarTabla(int tipo) {
+
         modelo.setRowCount(0);
-        for (Alquiler a : alquilerDAO.listarPorEstado(devuelto)) {
-            agregarFilaTabla(a);
-        }
+
+        alquilerCtrl.listar().stream()
+                .filter(a -> {
+                    if (tipo == 1) {
+                        return a.getPago() == null;      // Pendientes
+                    }
+                    if (tipo == 2) {
+                        return a.getPago() != null;      // Devueltos
+                    }
+                    return true;                                     // Todos
+                })
+                .forEach(this::agregarFila);
     }
 
-    private void accionRegistrar(ActionEvent e) {
+    // =================================================================================
+    // REGISTRAR ALQUILER
+    // =================================================================================
+    private void registrarAlquiler(ActionEvent e) {
+
         Cliente c = (Cliente) comboCliente.getSelectedItem();
         Vehiculo v = (Vehiculo) comboVehiculo.getSelectedItem();
 
         if (c == null || v == null) {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar cliente y vehículo.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        // Validar que el vehículo no esté actualmente alquilado y pendiente
-        List<Alquiler> pendientes = alquilerDAO.listarPorEstado(false);
-        boolean yaAlquilado = pendientes.stream().anyMatch(a -> a.getVehiculo().getId() == v.getId());
-        if (yaAlquilado) {
             JOptionPane.showMessageDialog(this,
-                    "Este vehículo ya está alquilado y pendiente de devolución.",
+                    "Debe seleccionar cliente y vehículo.",
                     "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // Pedir fechas y km
-        LocalDate inicio = LocalDate.now();
-        LocalDate fin = inicio.plusDays(1); // por defecto 1 día
-        int kmInicio = 0;
-        int kmFin = 0;
-
         try {
-            String strInicio = JOptionPane.showInputDialog(this, "Fecha de inicio (YYYY-MM-DD):", inicio.toString());
-            if (strInicio != null) {
-                inicio = LocalDate.parse(strInicio);
-            }
-            String strFin = JOptionPane.showInputDialog(this, "Fecha de fin (YYYY-MM-DD):", fin.toString());
-            if (strFin != null) {
-                fin = LocalDate.parse(strFin);
-            }
-            kmInicio = Integer.parseInt(JOptionPane.showInputDialog(this, "Kilómetros inicio:", "0"));
-            kmFin = Integer.parseInt(JOptionPane.showInputDialog(this, "Kilómetros fin:", kmInicio + 100));
+            String iniStr = JOptionPane.showInputDialog(this, "Fecha inicio (YYYY-MM-DD):", LocalDate.now());
+            String finStr = JOptionPane.showInputDialog(this, "Fecha fin (YYYY-MM-DD):", LocalDate.now().plusDays(1));
+
+            LocalDate ini = LocalDate.parse(iniStr);
+            LocalDate fin = LocalDate.parse(finStr);
+
+            alquilerCtrl.crear(c, v, null, ini, fin);
+
+            // COBRO INICIAL
+            double monto = v.getTarifaPorDia();
+            pagoCtrl.pagar(alquilerCtrl.listar().getLast().getId(), monto, "Efectivo");
+
+            cargarTabla();
+            cargarVehiculosDisponibles();
+
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Datos inválidos.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        Alquiler a = new Alquiler();
-        a.setCliente(c);
-        a.setVehiculo(v);
-        a.setFechaInicio(inicio);
-        a.setFechaFin(fin);
-        a.setKmInicio(kmInicio);
-        a.setKmFin(kmFin);
-        a.calcularMontoTotal();
-
-        alquilerDAO.registrar(a);
-        cargarTabla();
-        cargarCombos(); // actualizar comboVehiculo para deshabilitar vehículos ya alquilados
     }
 
-    private void accionRecibir(ActionEvent e) {
+    // =================================================================================
+    // REGISTRAR DEVOLUCIÓN
+    // =================================================================================
+    private void registrarDevolucion(ActionEvent e) {
+
         int fila = tabla.getSelectedRow();
         if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un alquiler pendiente.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Seleccione un alquiler pendiente.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         int id = (int) modelo.getValueAt(fila, 0);
-        Alquiler a = alquilerDAO.buscarPorId(id);
 
-        if (a == null || a.isDevuelto()) {
-            JOptionPane.showMessageDialog(this, "Este alquiler ya fue devuelto.", "Error", JOptionPane.ERROR_MESSAGE);
+        // si ya está devuelto → no permitir
+        Alquiler a = alquilerCtrl.listar().stream()
+                .filter(x -> x.getId() == id)
+                .findFirst().orElse(null);
+
+        if (a == null || a.getPago() != null) {
+            JOptionPane.showMessageDialog(this,
+                    "Este alquiler ya fue devuelto.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try {
-            int kmFin = Integer.parseInt(JOptionPane.showInputDialog(this, "Kilómetros final:", a.getKmFin()));
-            a.setKmFin(kmFin);
-            a.calcularMontoTotal();
-            alquilerDAO.devolver(a.getId(), kmFin);
+            String kmFinStr = JOptionPane.showInputDialog(this, "Kilómetros finales:");
+            double kmFin = Double.parseDouble(kmFinStr);
+
+            double extra = alquilerCtrl.devolverVehiculo(id, kmFin);
+
+            // Si hay que cobrar extra
+            if (extra > 0) {
+                pagoCtrl.pagar(id, extra, "Efectivo");
+                JOptionPane.showMessageDialog(this,
+                        "Se cobraron km extra: $" + extra,
+                        "Cobro realizado", JOptionPane.INFORMATION_MESSAGE);
+            }
+
             cargarTabla();
-            cargarCombos(); // actualizar comboVehiculo para que vuelva a aparecer
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Kilómetros inválidos.", "Error", JOptionPane.ERROR_MESSAGE);
+            cargarVehiculosDisponibles();
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

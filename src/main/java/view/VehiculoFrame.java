@@ -22,7 +22,6 @@ public class VehiculoFrame extends JFrame {
     private StyledTextField txtKmDia;
     private StyledTextField txtTarifaDia;
     private StyledTextField txtExtraKm;
-    private JCheckBox chkDisponible;   // ← NUEVO
 
     public VehiculoFrame() {
         setTitle("CRUD Vehículos");
@@ -33,8 +32,7 @@ public class VehiculoFrame extends JFrame {
         // Tabla
         String[] columnas = {
             "ID", "Patente", "Modelo", "Km/día",
-            "Tarifa/día", "Extra/km", "Veces alquilado",
-            "Disponible" // ← NUEVO
+            "Tarifa/día", "Extra/km", "Veces alquilado"
         };
 
         modelo = new DefaultTableModel(columnas, 0) {
@@ -48,15 +46,13 @@ public class VehiculoFrame extends JFrame {
         add(new StyledScrollPane(tabla), BorderLayout.CENTER);
 
         // Panel de formulario arriba
-        StyledPanel panelForm = new StyledPanel(new GridLayout(3, 5, 10, 10));
+        StyledPanel panelForm = new StyledPanel(new GridLayout(2, 5, 10, 10));
 
         txtPatente = new StyledTextField();
         txtModelo = new StyledTextField();
         txtKmDia = new StyledTextField();
         txtTarifaDia = new StyledTextField();
         txtExtraKm = new StyledTextField();
-        chkDisponible = new JCheckBox("Disponible"); // ← NUEVO
-        chkDisponible.setSelected(true);
 
         // Primera fila labels
         panelForm.add(new StyledLabel("Patente:"));
@@ -71,13 +67,6 @@ public class VehiculoFrame extends JFrame {
         panelForm.add(txtKmDia);
         panelForm.add(txtTarifaDia);
         panelForm.add(txtExtraKm);
-
-        // Fila checkbox
-        panelForm.add(new JLabel(""));
-        panelForm.add(chkDisponible);
-        panelForm.add(new JLabel(""));
-        panelForm.add(new JLabel(""));
-        panelForm.add(new JLabel(""));
 
         add(panelForm, BorderLayout.NORTH);
 
@@ -119,8 +108,7 @@ public class VehiculoFrame extends JFrame {
                 v.getKmIncluidoPorDia(),
                 v.getTarifaPorDia(),
                 v.getTarifaExtraPorKm(),
-                v.getVecesAlquilado(),
-                v.isDisponible() ? "Sí" : "No" // ← NUEVO
+                v.getVecesAlquilado()
             });
         }
     }
@@ -133,9 +121,6 @@ public class VehiculoFrame extends JFrame {
             txtKmDia.setText(modelo.getValueAt(fila, 3).toString());
             txtTarifaDia.setText(modelo.getValueAt(fila, 4).toString());
             txtExtraKm.setText(modelo.getValueAt(fila, 5).toString());
-
-            String disp = modelo.getValueAt(fila, 7).toString();
-            chkDisponible.setSelected(disp.equals("Sí"));  // ← NUEVO
         }
     }
 
@@ -145,7 +130,6 @@ public class VehiculoFrame extends JFrame {
         txtKmDia.setText("");
         txtTarifaDia.setText("");
         txtExtraKm.setText("");
-        chkDisponible.setSelected(true); // ← NUEVO
         tabla.clearSelection();
     }
 
@@ -157,7 +141,6 @@ public class VehiculoFrame extends JFrame {
             v.setKmIncluidoPorDia(Double.parseDouble(txtKmDia.getText().trim()));
             v.setTarifaPorDia(Double.parseDouble(txtTarifaDia.getText().trim()));
             v.setTarifaExtraPorKm(Double.parseDouble(txtExtraKm.getText().trim()));
-            v.setDisponible(chkDisponible.isSelected());  // ← NUEVO
 
             controlador.guardar(v);
             cargarTabla();
@@ -187,7 +170,6 @@ public class VehiculoFrame extends JFrame {
             v.setKmIncluidoPorDia(Double.parseDouble(txtKmDia.getText().trim()));
             v.setTarifaPorDia(Double.parseDouble(txtTarifaDia.getText().trim()));
             v.setTarifaExtraPorKm(Double.parseDouble(txtExtraKm.getText().trim()));
-            v.setDisponible(chkDisponible.isSelected());  // ← NUEVO
 
             controlador.actualizar(v);
             cargarTabla();
