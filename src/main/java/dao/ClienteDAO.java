@@ -37,9 +37,7 @@ public class ClienteDAO {
         }
     }
 
-    // -------------------------------------------------
-    // INSERT
-    // -------------------------------------------------
+    // INSERTAR
     public void agregar(Cliente c) {
         String sql = """
             INSERT INTO cliente
@@ -68,9 +66,7 @@ public class ClienteDAO {
         }
     }
 
-    // -------------------------------------------------
     // LISTAR
-    // -------------------------------------------------
     public List<Cliente> listar() {
         List<Cliente> lista = new ArrayList<>();
         String sql = "SELECT * FROM cliente";
@@ -102,9 +98,7 @@ public class ClienteDAO {
         return lista;
     }
 
-    // -------------------------------------------------
-    // UPDATE
-    // -------------------------------------------------
+    // ACTUlIZAR
     public void actualizar(Cliente c) {
         String sql = """
             UPDATE cliente SET
@@ -134,9 +128,7 @@ public class ClienteDAO {
         }
     }
 
-    // -------------------------------------------------
-    // DELETE
-    // -------------------------------------------------
+    // BORRAR
     public void eliminar(int id) {
         String sql = "DELETE FROM cliente WHERE id = ?";
 
@@ -151,9 +143,7 @@ public class ClienteDAO {
         }
     }
 
-    // -------------------------------------------------
     // BUSCAR POR ID
-    // -------------------------------------------------
     public Cliente buscarPorId(int id) {
         String sql = "SELECT * FROM cliente WHERE id = ?";
 

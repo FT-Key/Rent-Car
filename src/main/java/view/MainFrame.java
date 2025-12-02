@@ -11,7 +11,9 @@ public class MainFrame extends JFrame {
 
     public MainFrame() {
         setTitle("Rent-Car Management System");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Sin barra de título (quita X, minimizar, maximizar)
+        setUndecorated(true);
 
         // Iniciar maximizado
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -20,13 +22,13 @@ public class MainFrame extends JFrame {
         setSize(1200, 700);
         setMinimumSize(new Dimension(900, 600));
         setLocationRelativeTo(null);
+
         setJMenuBar(crearMenu());
 
         // Panel principal
         JPanel panelPrincipal = new JPanel(new BorderLayout());
         panelPrincipal.setBackground(new Color(245, 247, 250));
 
-        // Componentes usando los Styled Components
         panelPrincipal.add(crearHeader(), BorderLayout.NORTH);
         panelPrincipal.add(crearPanelCentral(), BorderLayout.CENTER);
         panelPrincipal.add(crearFooter(), BorderLayout.SOUTH);
@@ -52,7 +54,6 @@ public class MainFrame extends JFrame {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
 
-        // Título de sección usando StyledTitle
         StyledTitle tituloSeccion = new StyledTitle("Panel de Control", StyledTitle.TitleSize.LARGE);
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -63,10 +64,8 @@ public class MainFrame extends JFrame {
         gbc.gridwidth = 1;
         gbc.weighty = 1.0;
 
-        // Card Vehículos usando StyledCard
-        StyledCard cardVehiculos = new StyledCard(
-                "🚙",
-                "Vehículos",
+        // -------- CARDS --------
+        StyledCard cardVehiculos = new StyledCard("🚙", "Vehículos",
                 "Gestiona tu flota de vehículos",
                 new Color(52, 152, 219)
         );
@@ -75,10 +74,7 @@ public class MainFrame extends JFrame {
         gbc.gridy = 1;
         panel.add(cardVehiculos, gbc);
 
-        // Card Clientes
-        StyledCard cardClientes = new StyledCard(
-                "👥",
-                "Clientes",
+        StyledCard cardClientes = new StyledCard("👥", "Clientes",
                 "Administra tu cartera de clientes",
                 new Color(46, 204, 113)
         );
@@ -87,10 +83,7 @@ public class MainFrame extends JFrame {
         gbc.gridy = 1;
         panel.add(cardClientes, gbc);
 
-        // Card Empleados
-        StyledCard cardEmpleados = new StyledCard(
-                "💼",
-                "Empleados",
+        StyledCard cardEmpleados = new StyledCard("💼", "Empleados",
                 "Gestiona el personal de tu empresa",
                 new Color(155, 89, 182)
         );
@@ -99,10 +92,7 @@ public class MainFrame extends JFrame {
         gbc.gridy = 2;
         panel.add(cardEmpleados, gbc);
 
-        // Card Alquileres
-        StyledCard cardAlquileres = new StyledCard(
-                "📋",
-                "Alquileres",
+        StyledCard cardAlquileres = new StyledCard("📋", "Alquileres",
                 "Registra y controla alquileres",
                 new Color(230, 126, 34)
         );
@@ -145,33 +135,47 @@ public class MainFrame extends JFrame {
         registrarAlquiler.addActionListener(this::abrirAlquilerFrame);
         menuAlquileres.add(registrarAlquiler);
 
+        // SISTEMA → SALIR
+        StyledMenu menuSistema = new StyledMenu("Sistema");
+        StyledMenuItem salir = new StyledMenuItem("Salir");
+        salir.addActionListener(e -> System.exit(0));
+        menuSistema.add(salir);
+
+        // Agregar al menú
         menuBar.add(menuVehiculos);
         menuBar.add(menuClientes);
         menuBar.add(menuEmpleados);
         menuBar.add(menuAlquileres);
+        menuBar.add(menuSistema);
 
         return menuBar;
     }
 
-    // ---------- Acciones para abrir frames ----------
+    //  ABRIR FRAMES "HIJOS" COMO DIALOG MODAL (bloquea MainFrame)
     private void abrirVehiculoFrame(ActionEvent e) {
-        VehiculoFrame frame = new VehiculoFrame();
-        frame.setVisible(true);
+        mostrarDialogo(new VehiculoFrame());
     }
 
     private void abrirClienteFrame(ActionEvent e) {
-        ClienteFrame frame = new ClienteFrame();
-        frame.setVisible(true);
+        mostrarDialogo(new ClienteFrame());
     }
 
     private void abrirEmpleadoFrame(ActionEvent e) {
-        EmpleadoFrame frame = new EmpleadoFrame();
-        frame.setVisible(true);
+        mostrarDialogo(new EmpleadoFrame());
     }
 
     private void abrirAlquilerFrame(ActionEvent e) {
-        AlquilerFrame frame = new AlquilerFrame();
-        frame.setVisible(true);
+        mostrarDialogo(new AlquilerFrame());
+    }
+
+    // ---------- Convierte los frames hijos en DIALOGS modales -----------
+    private void mostrarDialogo(JFrame frameOriginal) {
+        JDialog dialog = new JDialog(this, frameOriginal.getTitle(), true);
+        dialog.setContentPane(frameOriginal.getContentPane());
+        dialog.setSize(frameOriginal.getSize());
+        dialog.setLocationRelativeTo(this);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setVisible(true);
     }
 
     @SuppressWarnings("unchecked")

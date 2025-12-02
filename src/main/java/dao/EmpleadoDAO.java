@@ -37,9 +37,7 @@ public class EmpleadoDAO {
         }
     }
 
-    // -------------------------------------------------
-    // INSERT
-    // -------------------------------------------------
+    // INSERTAR
     public void agregar(Empleado e) {
         String sql = """
             INSERT INTO empleado
@@ -68,9 +66,7 @@ public class EmpleadoDAO {
         }
     }
 
-    // -------------------------------------------------
     // LISTAR
-    // -------------------------------------------------
     public List<Empleado> listar() {
         List<Empleado> lista = new ArrayList<>();
         String sql = "SELECT * FROM empleado";
@@ -102,9 +98,7 @@ public class EmpleadoDAO {
         return lista;
     }
 
-    // -------------------------------------------------
-    // UPDATE
-    // -------------------------------------------------
+    // ACTUALIZAR
     public void actualizar(Empleado e) {
         String sql = """
             UPDATE empleado SET
@@ -134,9 +128,7 @@ public class EmpleadoDAO {
         }
     }
 
-    // -------------------------------------------------
     // DELETE
-    // -------------------------------------------------
     public void eliminar(int id) {
         String sql = "DELETE FROM empleado WHERE id = ?";
 
@@ -151,9 +143,7 @@ public class EmpleadoDAO {
         }
     }
 
-    // -------------------------------------------------
     // BUSCAR POR ID
-    // -------------------------------------------------
     public Empleado buscarPorId(int id) {
         String sql = "SELECT * FROM empleado WHERE id = ?";
 

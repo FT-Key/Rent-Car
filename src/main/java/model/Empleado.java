@@ -4,7 +4,7 @@ public class Empleado extends Persona {
 
     private String usuario;
     private String password;
-    private String rol; // admin, vendedor, mecanico
+    private String rol;
 
     public Empleado() {
     }

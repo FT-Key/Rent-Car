@@ -36,9 +36,7 @@ public class EmpleadoFrame extends JFrame {
         setLayout(new BorderLayout());
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        // ============================================
         // TABLA
-        // ============================================
         String[] columnas = {
             "ID", "Nombre", "Apellido", "DNI",
             "Teléfono", "Email", "Dirección",
@@ -50,9 +48,7 @@ public class EmpleadoFrame extends JFrame {
 
         add(new StyledScrollPane(tabla), BorderLayout.CENTER);
 
-        // ============================================
         // FORMULARIO
-        // ============================================
         StyledPanel panelForm = new StyledPanel(new GridLayout(9, 2, 10, 10));
 
         txtNombre = new StyledTextField();
@@ -88,9 +84,7 @@ public class EmpleadoFrame extends JFrame {
 
         add(panelForm, BorderLayout.NORTH);
 
-        // ============================================
         // BOTONES
-        // ============================================
         JPanel panelBotones = new JPanel(new FlowLayout());
 
         StyledButton btnNuevo = new StyledButton("Nuevo");
@@ -116,9 +110,7 @@ public class EmpleadoFrame extends JFrame {
         cargarTabla();
     }
 
-    // ------------------------------------------------------------
     // MÉTODOS
-    // ------------------------------------------------------------
     private void cargarTabla() {
         modelo.setRowCount(0);
 

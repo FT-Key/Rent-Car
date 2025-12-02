@@ -5,11 +5,11 @@ import java.util.Date;
 public class Pago {
 
     private int id;
-    private int alquilerId;   // FK hacia alquiler
+    private int alquilerId;
     private double monto;
-    private String metodo;    // tarjeta, efectivo, transferencia
+    private String metodo;
     private Date fecha;
-    private String estado;    // pagado, pendiente
+    private String estado;
 
     public Pago() {}
 

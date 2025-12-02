@@ -1,15 +1,24 @@
 package utils;
 
+import conexion.ConexionSQL;
+
 import dao.ClienteDAO;
 import dao.VehiculoDAO;
 import dao.EmpleadoDAO;
+
 import model.Cliente;
 import model.Vehiculo;
 import model.Empleado;
 
+import java.sql.Connection;
+import java.sql.Statement;
+
 public class Seeder {
 
     public static void main(String[] args) {
+
+        // Crear tablas alquiler y pago antes de los inserts
+        crearTablasAlquilerYPago();
 
         ClienteDAO clienteDAO = new ClienteDAO();
         VehiculoDAO vehiculoDAO = new VehiculoDAO();
@@ -86,5 +95,63 @@ public class Seeder {
         System.out.println("Empleados seeders insertados.");
 
         System.out.println("----- SEED COMPLETO -----");
+    }
+
+    // CREAR TABLAS ALQUILER + PAGO 
+    private static void crearTablasAlquilerYPago() {
+
+        // Tabla Pago
+        String sqlPago = """
+            CREATE TABLE IF NOT EXISTS pago (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                alquiler_id INT NULL,
+                monto DOUBLE NOT NULL,
+                metodo VARCHAR(20),
+                fecha DATETIME,
+                estado VARCHAR(20)
+            );
+        """;
+
+        // Tabla Alquiler
+        String sqlAlquiler = """
+            CREATE TABLE IF NOT EXISTS alquiler (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                cliente_id INT NOT NULL,
+                vehiculo_id INT NOT NULL,
+                fecha_inicio DATE NOT NULL,
+                fecha_fin DATE NOT NULL,
+                precio_total DOUBLE NOT NULL,
+                pago_id INT NULL,
+                empleado_id INT NULL,
+                FOREIGN KEY (cliente_id) REFERENCES cliente(id),
+                FOREIGN KEY (vehiculo_id) REFERENCES vehiculo(id),
+                FOREIGN KEY (empleado_id) REFERENCES empleado(id),
+                FOREIGN KEY (pago_id) REFERENCES pago(id)
+            );
+        """;
+
+        // FK opcional: pago → alquiler
+        String fkPago = """
+            ALTER TABLE pago
+            ADD CONSTRAINT fk_pago_alquiler 
+            FOREIGN KEY (alquiler_id) REFERENCES alquiler(id);
+        """;
+
+        try (Connection conn = ConexionSQL.getConnection(); Statement stmt = conn.createStatement()) {
+
+            stmt.execute(sqlPago);
+            stmt.execute(sqlAlquiler);
+
+            // Intentar crear FK
+            try {
+                stmt.execute(fkPago);
+            } catch (Exception ignored) {}
+
+            System.out.println("Tablas alquiler y pago creadas/verificadas.");
+
+        } catch (Exception e) {
+            System.out.println("Error creando tablas:");
+            e.printStackTrace();
+        }
     }
 }
