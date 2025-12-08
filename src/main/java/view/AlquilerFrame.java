@@ -115,7 +115,6 @@ public class AlquilerFrame extends JFrame {
     private void cargarVehiculosDisponibles() {
         comboVehiculo.removeAllItems();
 
-        // Usar el controlador para obtener vehículos disponibles
         List<Vehiculo> disponibles = alquilerCtrl.obtenerVehiculosDisponibles();
 
         if (disponibles.isEmpty()) {
@@ -311,7 +310,7 @@ public class AlquilerFrame extends JFrame {
         }
     }
 
-    // REGISTRAR DEVOLUCIÓN (CORREGIDO)
+    // REGISTRAR DEVOLUCIÓN
     private void registrarDevolucion(ActionEvent e) {
         int fila = tabla.getSelectedRow();
         if (fila == -1) {
@@ -382,11 +381,7 @@ public class AlquilerFrame extends JFrame {
                 return;
             }
 
-            // Procesar la devolución
-            alquilerCtrl.devolverVehiculo(id, kmRecorridos);
-
-            // Registrar el pago con el monto total
-            pagoCtrl.pagar(id, montoTotal, metodoPago);
+            alquilerCtrl.procesarDevolucionCompleta(id, kmRecorridos, montoTotal, metodoPago);
 
             if (costoExtra > 0) {
                 JOptionPane.showMessageDialog(this,
@@ -405,7 +400,6 @@ public class AlquilerFrame extends JFrame {
                         JOptionPane.INFORMATION_MESSAGE);
             }
 
-            // Actualizar pantalla
             cargarTabla();
             cargarVehiculosDisponibles();
 

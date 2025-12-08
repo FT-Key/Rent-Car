@@ -2,7 +2,6 @@ conexion\ConexionSQL.class
 dao\PagoDAO.class
 model\Persona.class
 app\Main.class
-service\EmpleadoServicio.class
 components\StyledPasswordField.class
 components\StyledTitle$TitleSize.class
 model\Empleado.class
@@ -18,7 +17,6 @@ view\ClienteFrame.class
 components\StyledButton$1.class
 dao\VehiculoDAO.class
 model\Vehiculo.class
-service\PagoServicio.class
 utils\UIUtils.class
 dao\EmpleadoDAO.class
 view\AlquilerFrame.class
@@ -40,10 +38,8 @@ components\StyledMenuBar.class
 controller\PagoControlador.class
 components\StyledTable.class
 controller\AlquilerControlador.class
-service\AlquilerServicio.class
 components\StyledComboBox.class
 components\StyledTextField.class
-service\ClienteServicio.class
 utils\UIStyles.class
 components\StyledMenu.class
 controller\VehiculoControlador.class
@@ -54,4 +50,3 @@ controller\EmpleadoControlador.class
 components\StyledPasswordField$1.class
 components\StyledTable$1.class
 view\VehiculoFrame.class
-service\VehiculoService.class

@@ -1,41 +1,52 @@
 package controller;
 
 import model.Cliente;
-import service.ClienteServicio;
-
 import java.util.List;
 
 public class ClienteControlador {
 
-    private ClienteServicio servicio;
-
-    public ClienteControlador() {
-        this.servicio = new ClienteServicio();
-    }
-
+    /**
+     * Guarda un nuevo cliente en la base de datos
+     */
     public void guardarCliente(String nombre, String apellido, String dni, String telefono,
-                               String email, String direccion,
-                               String licenciaNumero, String licenciaCategoria, String licenciaVencimiento)
+            String email, String direccion,
+            String licenciaNumero, String licenciaCategoria, String licenciaVencimiento)
             throws Exception {
-
-        servicio.agregarCliente(nombre, apellido, dni, telefono, email, direccion,
+        Cliente cliente = Cliente.crear(nombre, apellido, dni, telefono, email, direccion,
                 licenciaNumero, licenciaCategoria, licenciaVencimiento);
+        cliente.guardar();
     }
 
+    /**
+     * Actualiza un cliente existente
+     */
     public void actualizarCliente(int id, String nombre, String apellido, String dni, String telefono,
-                                  String email, String direccion,
-                                  String licenciaNumero, String licenciaCategoria, String licenciaVencimiento)
+            String email, String direccion,
+            String licenciaNumero, String licenciaCategoria, String licenciaVencimiento)
             throws Exception {
-
-        servicio.actualizarCliente(id, nombre, apellido, dni, telefono, email, direccion,
+        Cliente cliente = new Cliente(id, nombre, apellido, dni, telefono, email, direccion,
                 licenciaNumero, licenciaCategoria, licenciaVencimiento);
+        cliente.guardar();
     }
 
+    /**
+     * Elimina un cliente por su ID
+     */
     public void borrarCliente(int id) {
-        servicio.eliminarCliente(id);
+        Cliente.eliminarPorId(id);
     }
 
+    /**
+     * Obtiene todos los clientes
+     */
     public List<Cliente> obtenerClientes() {
-        return servicio.listar();
+        return Cliente.obtenerTodos();
+    }
+
+    /**
+     * Busca un cliente por su ID
+     */
+    public Cliente buscarCliente(int id) {
+        return Cliente.buscarPorId(id);
     }
 }

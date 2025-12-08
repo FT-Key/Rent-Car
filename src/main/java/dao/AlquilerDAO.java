@@ -119,110 +119,91 @@ public class AlquilerDAO {
     public List<Alquiler> listar() {
         List<Alquiler> lista = new ArrayList<>();
 
-        // Query con nombres de columnas en snake_case
         String sql = """
-            SELECT a.id AS alquiler_id,
-                   a.fecha_inicio, a.fecha_fin, a.precio_total, a.pago_id,
-                   a.cliente_id, a.vehiculo_id,
+        SELECT a.id AS alquiler_id,
+               a.fecha_inicio, a.fecha_fin, a.precio_total, a.pago_id,
+               a.cliente_id, a.vehiculo_id,
 
-                   c.nombre AS cli_nombre, c.apellido AS cli_apellido,
-                   c.dni AS cli_dni, c.telefono AS cli_tel, 
-                   c.email AS cli_email, c.direccion AS cli_dir,
+               c.nombre AS cli_nombre, c.apellido AS cli_apellido,
+               c.dni AS cli_dni, c.telefono AS cli_tel, 
+               c.email AS cli_email, c.direccion AS cli_dir,
+               c.licencia_numero, c.licencia_categoria, c.licencia_vencimiento,
 
-                   v.patente, v.modelo, 
-                   v.km_incluido_por_dia, 
-                   v.tarifa_por_dia, 
-                   v.tarifa_extra_por_km, 
-                   v.veces_alquilado,
+               v.patente, v.modelo, 
+               v.km_incluido_por_dia, 
+               v.tarifa_por_dia, 
+               v.tarifa_extra_por_km, 
+               v.veces_alquilado,
 
-                   p.id AS pago_id_real, p.monto, p.metodo, 
-                   p.fecha AS pago_fecha, p.estado
+               p.id AS pago_id_real, p.monto, p.metodo, 
+               p.fecha AS pago_fecha, p.estado
 
-            FROM alquiler a
-            INNER JOIN cliente c ON a.cliente_id = c.id
-            INNER JOIN vehiculo v ON a.vehiculo_id = v.id
-            LEFT JOIN pago p ON a.pago_id = p.id
-        """;
-
-        System.out.println("==== EJECUTANDO QUERY LISTAR ====");
+        FROM alquiler a
+        INNER JOIN cliente c ON a.cliente_id = c.id
+        INNER JOIN vehiculo v ON a.vehiculo_id = v.id
+        LEFT JOIN pago p ON a.pago_id = p.id
+    """;
 
         try (Connection con = ConexionSQL.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ResultSet rs = ps.executeQuery();
-            int count = 0;
 
             while (rs.next()) {
-                try {
-                    count++;
+                // CLIENTE
+                Cliente cli = new Cliente(
+                        rs.getInt("cliente_id"),
+                        rs.getString("cli_nombre"),
+                        rs.getString("cli_apellido"),
+                        rs.getString("cli_dni"),
+                        rs.getString("cli_tel"),
+                        rs.getString("cli_email"),
+                        rs.getString("cli_dir"),
+                        rs.getString("licencia_numero"), // ✅
+                        rs.getString("licencia_categoria"), // ✅
+                        rs.getString("licencia_vencimiento") // ✅
+                );
 
-                    int alquilerId = rs.getInt("alquiler_id");
-                    System.out.println("Procesando alquiler ID: " + alquilerId);
+                // VEHICULO
+                Vehiculo v = new Vehiculo(
+                        rs.getInt("vehiculo_id"),
+                        rs.getString("patente"),
+                        rs.getString("modelo"),
+                        rs.getDouble("km_incluido_por_dia"),
+                        rs.getDouble("tarifa_por_dia"),
+                        rs.getDouble("tarifa_extra_por_km")
+                );
+                v.setVecesAlquilado(rs.getInt("veces_alquilado"));  // ✅
 
-                    // CLIENTE
-                    Cliente cli = new Cliente(
-                            rs.getInt("cliente_id"),
-                            rs.getString("cli_nombre"),
-                            rs.getString("cli_apellido"),
-                            rs.getString("cli_dni"),
-                            rs.getString("cli_tel"),
-                            rs.getString("cli_email"),
-                            rs.getString("cli_dir"),
-                            null, // licenciaNumero
-                            null, // licenciaCategoria
-                            null // licenciaVencimiento
+                // PAGO
+                Pago pago = null;
+                int pagoIdReal = rs.getInt("pago_id_real");
+                if (!rs.wasNull()) {
+                    pago = new Pago(
+                            pagoIdReal,
+                            rs.getInt("alquiler_id"),
+                            rs.getDouble("monto"),
+                            rs.getString("metodo"),
+                            rs.getDate("pago_fecha"),
+                            rs.getString("estado")
                     );
-
-                    // VEHICULO
-                    Vehiculo v = new Vehiculo(
-                            rs.getInt("vehiculo_id"),
-                            rs.getString("patente"),
-                            rs.getString("modelo"),
-                            rs.getDouble("km_incluido_por_dia"),
-                            rs.getDouble("tarifa_por_dia"),
-                            rs.getDouble("tarifa_extra_por_km"),
-                            rs.getInt("veces_alquilado")
-                    );
-
-                    // PAGO
-                    Pago pago = null;
-                    int pagoIdReal = rs.getInt("pago_id_real");
-                    if (!rs.wasNull()) {
-                        pago = new Pago(
-                                pagoIdReal,
-                                alquilerId,
-                                rs.getDouble("monto"),
-                                rs.getString("metodo"),
-                                rs.getDate("pago_fecha"),
-                                rs.getString("estado")
-                        );
-                    }
-
-                    // ALQUILER
-                    Alquiler a = new Alquiler(
-                            alquilerId,
-                            cli,
-                            v,
-                            rs.getDate("fecha_inicio").toLocalDate(),
-                            rs.getDate("fecha_fin").toLocalDate(),
-                            rs.getDouble("precio_total"),
-                            pago
-                    );
-
-                    lista.add(a);
-                    System.out.println("✓ Alquiler agregado: ID=" + alquilerId
-                            + ", Cliente=" + cli.getNombre() + " " + cli.getApellido()
-                            + ", Vehículo=" + v.getModelo());
-
-                } catch (Exception e) {
-                    System.err.println("✗ Error al procesar fila del ResultSet: " + e.getMessage());
-                    e.printStackTrace();
                 }
+
+                // ALQUILER
+                Alquiler a = new Alquiler(
+                        rs.getInt("alquiler_id"),
+                        cli,
+                        v,
+                        rs.getDate("fecha_inicio").toLocalDate(),
+                        rs.getDate("fecha_fin").toLocalDate(),
+                        rs.getDouble("precio_total"),
+                        pago
+                );
+
+                lista.add(a);
             }
 
-            System.out.println("==== Total alquileres recuperados: " + count + " ====");
-
         } catch (SQLException e) {
-            System.err.println("✗ Error SQL al listar alquileres: " + e.getMessage());
+            System.err.println("Error al listar alquileres: " + e.getMessage());
             e.printStackTrace();
         }
 
@@ -293,26 +274,6 @@ public class AlquilerDAO {
         }
 
         return false;
-    }
-
-    // MÉTODO DE PRUEBA
-    public void testConexion() {
-        System.out.println("==== TEST DE CONEXIÓN ====");
-
-        String sql = "SELECT COUNT(*) as total FROM alquiler";
-
-        try (Connection con = ConexionSQL.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                int total = rs.getInt("total");
-                System.out.println("✓ Total de registros en tabla alquiler: " + total);
-            }
-
-        } catch (SQLException e) {
-            System.err.println("✗ Error en test de conexión: " + e.getMessage());
-            e.printStackTrace();
-        }
     }
 
 }

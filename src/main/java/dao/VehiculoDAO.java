@@ -27,8 +27,7 @@ public class VehiculoDAO {
             )
         """;
 
-        try (Connection con = ConexionSQL.getConnection();
-             Statement st = con.createStatement()) {
+        try (Connection con = ConexionSQL.getConnection(); Statement st = con.createStatement()) {
             st.execute(sql);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -44,8 +43,7 @@ public class VehiculoDAO {
             VALUES (?, ?, ?, ?, ?, 0)
         """;
 
-        try (Connection con = ConexionSQL.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConexionSQL.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, v.getPatente());
             ps.setString(2, v.getModelo());
@@ -64,9 +62,7 @@ public class VehiculoDAO {
         List<Vehiculo> lista = new ArrayList<>();
         String sql = "SELECT * FROM vehiculo";
 
-        try (Connection con = ConexionSQL.getConnection();
-             Statement st = con.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+        try (Connection con = ConexionSQL.getConnection(); Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
 
@@ -96,8 +92,7 @@ public class VehiculoDAO {
 
         String sql = "SELECT * FROM vehiculo WHERE id = ?";
 
-        try (Connection con = ConexionSQL.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConexionSQL.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -130,24 +125,25 @@ public class VehiculoDAO {
     public void actualizar(Vehiculo v) {
 
         String sql = """
-            UPDATE vehiculo SET
-                patente = ?, 
-                modelo = ?, 
-                km_incluido_por_dia = ?, 
-                tarifa_por_dia = ?, 
-                tarifa_extra_por_km = ?
-            WHERE id = ?
-        """;
+        UPDATE vehiculo SET
+            patente = ?, 
+            modelo = ?, 
+            km_incluido_por_dia = ?, 
+            tarifa_por_dia = ?, 
+            tarifa_extra_por_km = ?,
+            veces_alquilado = ?
+        WHERE id = ?
+    """;
 
-        try (Connection con = ConexionSQL.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConexionSQL.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, v.getPatente());
             ps.setString(2, v.getModelo());
             ps.setDouble(3, v.getKmIncluidoPorDia());
             ps.setDouble(4, v.getTarifaPorDia());
             ps.setDouble(5, v.getTarifaExtraPorKm());
-            ps.setInt(6, v.getId());
+            ps.setInt(6, v.getVecesAlquilado());
+            ps.setInt(7, v.getId());
 
             ps.executeUpdate();
 
@@ -161,8 +157,7 @@ public class VehiculoDAO {
 
         String sql = "DELETE FROM vehiculo WHERE id=?";
 
-        try (Connection con = ConexionSQL.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        try (Connection con = ConexionSQL.getConnection(); PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             ps.executeUpdate();
